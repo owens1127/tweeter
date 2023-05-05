@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "collect": "node ./build/collect.js",
+    "tweet": "node ./build/tweet.js",
+    "go": "yarn build && yarn collect && yarn tweet"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "fs": "^0.0.1-security",
+    "openai": "^3.2.1",
+    "puppeteer": "^20.0.0"
+  }
+}
