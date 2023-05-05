@@ -36,15 +36,13 @@ async function generateTweet() {
   let indices = new Set<number>();
   let selectedTweets = new Set<string>();
 
-  const prefix = "";
-
   const payloadSize = () =>
     [...selectedTweets].reduce(
-      (size, tweet) => size + tweet.split(" ").length + 4,
-      prefix.split(" ").length
+      (size, tweet) => size + tweet.split(" ").length + 2,
+      50
     );
 
-  while (indices.size < 19 && payloadSize() < 2000) {
+  while (indices.size < 20 && payloadSize() < 3300) {
     const rand = Math.floor(Math.random() * tweets.length);
     if (indices.has(rand)) continue;
     else {
@@ -61,7 +59,7 @@ async function generateTweet() {
     messages: [
       {
         role: "system",
-        content: `You are a machine-learning model trying to emulate the tweets from ${username}. Rules: you cannot use hashtags. Here are ${username}'s recent tweets:`,
+        content: `You are a machine-learning model trying to emulate the tweets from ${username}. Here are ${username}'s recent tweets:`,
       },
       {
         role: "user",
@@ -69,13 +67,14 @@ async function generateTweet() {
       },
       {
         role: "user",
-        content: `Please generate 1 new tweet based on the language, writing-style, conveyed emotion, and topics in ${username}'s recent tweets`,
+        content: `Please generate 1 new short tweet based on the writing-style, language, emotion, and topics in those tweets`,
       },
     ],
   });
 
   const newTweet = completion.data.choices[0]
     .message!.content.replace(/#\w+\s?/g, "")
+    .replace("#", "")
     .trim();
   console.log(newTweet);
 
