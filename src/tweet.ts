@@ -1,8 +1,8 @@
 import * as dotenv from "dotenv";
 import { Configuration, OpenAIApi } from "openai";
+import { TwitterApi } from "twitter-api-v2";
 import fs from "fs";
 import config from "./config.json";
-import login from "./login";
 
 const { username } = config;
 dotenv.config();
@@ -16,18 +16,13 @@ const openai = new OpenAIApi(
 main();
 
 async function main() {
-  const tweet = generateTweet();
-  const { page, browser } = await login();
-
-  await page.goto("https://twitter.com/home");
-
-  const tweetTextArea = '[data-testid="tweetTextarea_0"]';
-  await page.waitForSelector(tweetTextArea, { timeout: 10000 });
-  await page.type(tweetTextArea, await tweet, { delay: 50 });
-  await page.click('[data-testid="tweetButtonInline"]');
-
-  // finish
-  await browser.close();
+  const tweet = await generateTweet();
+  await new TwitterApi({
+    appKey: process.env.TWITTER_API_KEY!,
+    appSecret: process.env.TWITTER_API_SECRET!,
+    accessToken: process.env.TWITTER_ACCESS_TOKEN!,
+    accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET!,
+  }).v2.tweet(tweet);
 }
 
 async function generateTweet() {
@@ -35,12 +30,13 @@ async function generateTweet() {
     JSON.parse(fs.readFileSync(`./tweets_${username}.json`, "utf8")) as string[]
   )
     .filter((tweet) => !tweet.includes("http"))
+    .map((tweet) => tweet.replace("\n", " "))
     .map((tweet) => tweet.replace(/\s{2,}/g, " "));
 
   let indices = new Set<number>();
   let selectedTweets = new Set<string>();
 
-  const prefix = `Act as a user who has sent the following list of tweets and write a new tweet as if you were that user:\n`;
+  const prefix = "";
 
   const payloadSize = () =>
     [...selectedTweets].reduce(
@@ -48,7 +44,7 @@ async function generateTweet() {
       prefix.split(" ").length
     );
 
-  while (indices.size < tweets.length && payloadSize() < 2048) {
+  while (indices.size < 19 && payloadSize() < 2000) {
     const rand = Math.floor(Math.random() * tweets.length);
     if (indices.has(rand)) continue;
     else {
@@ -57,17 +53,31 @@ async function generateTweet() {
     }
   }
 
-  const prompt = prefix + [...selectedTweets].join("\n\n");
+  const prompt = [...selectedTweets].join("\n\n");
 
-  const completion = await openai.createCompletion({
-    model: "text-davinci-002",
-    prompt,
-    max_tokens: 40,
-    n: 1,
+  const completion = await openai.createChatCompletion({
+    model: "gpt-3.5-turbo",
+    temperature: 0.5,
+    messages: [
+      {
+        role: "system",
+        content: `You are a machine-learning model trying to emulate the tweets from ${username}. Rules: you cannot use hashtags. Here are ${username}'s recent tweets:`,
+      },
+      {
+        role: "user",
+        content: prompt,
+      },
+      {
+        role: "user",
+        content: `Please generate 1 new tweet based on the language, writing-style, conveyed emotion, and topics in ${username}'s recent tweets`,
+      },
+    ],
   });
+
   const newTweet = completion.data.choices[0]
-    .text!.trim()
-    .split("\n")
-    .find((line) => line !== "" && line.length > 10)!;
+    .message!.content.replace(/#\w+\s?/g, "")
+    .trim();
+  console.log(newTweet);
+
   return newTweet;
 }

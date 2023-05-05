@@ -23,10 +23,20 @@ async function main() {
 
   type TweetData = { tweets: string[] };
 
-  let noNewTweetsCount = 0;
-  const tweets = new Set<String>();
+  let cachedTweets: string[];
+  try {
+    cachedTweets = JSON.parse(
+      fs.readFileSync(`./tweets_${username}.json`, "utf8")
+    ) as string[];
+  } catch {
+    cachedTweets = [];
+  }
+
+  const tweets = new Set<String>(cachedTweets);
 
   // find all tweets
+  let newTweets = 0;
+  let noNewTweetsCount = 0;
   while (noNewTweetsCount <= 10) {
     const tweetObject = await page.evaluate(async (): Promise<TweetData> => {
       const tweets = document.querySelectorAll(
@@ -40,6 +50,7 @@ async function main() {
     });
     for (const tweet of tweetObject.tweets) {
       if (!tweets.has(tweet)) {
+        newTweets++;
         noNewTweetsCount = 0;
         console.log(tweet);
         tweets.add(tweet);
@@ -54,5 +65,7 @@ async function main() {
     `./tweets_${username}.json`,
     JSON.stringify([...tweets], null, 2)
   );
-  console.log(`Found ${tweets.size} tweets from @${username}`);
+  console.log(
+    `Found ${tweets.size} (${newTweets} new) tweets from @${username}`
+  );
 }
