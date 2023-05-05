@@ -23,7 +23,7 @@ async function main() {
 
   const tweetTextArea = '[data-testid="tweetTextarea_0"]';
   await page.waitForSelector(tweetTextArea, { timeout: 10000 });
-  await page.type(tweetTextArea, await tweet, { delay: 20 });
+  await page.type(tweetTextArea, await tweet, { delay: 50 });
   await page.click('[data-testid="tweetButtonInline"]');
 
   // finish
@@ -44,11 +44,11 @@ async function generateTweet() {
 
   const payloadSize = () =>
     [...selectedTweets].reduce(
-      (size, tweet) => size + tweet.split(" ").length + 3,
+      (size, tweet) => size + tweet.split(" ").length + 4,
       prefix.split(" ").length
     );
 
-  while (indices.size < tweets.length && payloadSize() < 200) {
+  while (indices.size < tweets.length && payloadSize() < 2048) {
     const rand = Math.floor(Math.random() * tweets.length);
     if (indices.has(rand)) continue;
     else {
@@ -57,15 +57,17 @@ async function generateTweet() {
     }
   }
 
-  const prompt = prefix + [...selectedTweets].join("\n\n\n");
-
-  console.log(prompt);
+  const prompt = prefix + [...selectedTweets].join("\n\n");
 
   const completion = await openai.createCompletion({
     model: "text-davinci-002",
     prompt,
+    max_tokens: 40,
+    n: 1,
   });
-  const newTweet = completion.data.choices[0].text?.trim();
-  console.log(`New tweet generated: ${newTweet}`);
-  return newTweet ?? "";
+  const newTweet = completion.data.choices[0]
+    .text!.trim()
+    .split("\n")
+    .find((line) => line !== "" && line.length > 10)!;
+  return newTweet;
 }
