@@ -5,7 +5,7 @@ export default async function login(): Promise<{
   browser: Browser;
 }> {
   const browser = await puppeteer.launch({
-    headless: false,
+    headless: "new",
     args: ["--no-sandbox"],
   });
   const [page] = await browser.pages();
