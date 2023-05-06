@@ -1,4 +1,9 @@
 {
+  "name": "tweeter",
+  "description": "Tweet like someone else!",
+  "repository": "git@github.com:owensimpson/tweeter.git",
+  "author": "Owen Simpson",
+  "license": "MIT",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "collect": "node ./build/collect.js",
