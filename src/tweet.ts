@@ -4,8 +4,9 @@ import { TwitterApi } from "twitter-api-v2";
 import fs from "fs";
 import config from "./config.json";
 
-const { username } = config;
 dotenv.config();
+
+const { username, moods, adverbs } = config;
 
 const openai = new OpenAIApi(
   new Configuration({
@@ -13,16 +14,19 @@ const openai = new OpenAIApi(
   })
 );
 
+const twitter = new TwitterApi({
+  appKey: process.env.TWITTER_API_KEY!,
+  appSecret: process.env.TWITTER_API_SECRET!,
+  accessToken: process.env.TWITTER_ACCESS_TOKEN!,
+  accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET!,
+}).v2;
+
 main();
 
 async function main() {
   const tweet = await generateTweet();
-  await new TwitterApi({
-    appKey: process.env.TWITTER_API_KEY!,
-    appSecret: process.env.TWITTER_API_SECRET!,
-    accessToken: process.env.TWITTER_ACCESS_TOKEN!,
-    accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET!,
-  }).v2.tweet(tweet);
+  console.log(tweet);
+  await twitter.tweet(tweet);
 }
 
 async function generateTweet() {
@@ -42,7 +46,7 @@ async function generateTweet() {
       50
     );
 
-  while (indices.size < 20 && payloadSize() < 3300) {
+  while (indices.size < 25 && payloadSize() < 3300) {
     const rand = Math.floor(Math.random() * tweets.length);
     if (indices.has(rand)) continue;
     else {
@@ -52,10 +56,13 @@ async function generateTweet() {
   }
 
   const prompt = [...selectedTweets].join("\n\n");
+  const adverb = adverbs[Math.floor(Math.random() * adverbs.length)];
+  const mood = moods[Math.floor(Math.random() * moods.length)];
+  console.log(`Style: ${adverb} ${mood}`);
 
   const completion = await openai.createChatCompletion({
     model: "gpt-3.5-turbo",
-    temperature: 0.5,
+    temperature: 0.4,
     messages: [
       {
         role: "system",
@@ -67,16 +74,13 @@ async function generateTweet() {
       },
       {
         role: "user",
-        content: `Please generate 1 new short tweet based on the writing-style, language, emotion, and topics in those tweets`,
+        content: `Please generate 1 new ${adverb} ${mood} short tweet based on the writing-style, language, emotion, and topics in those tweets`,
       },
     ],
   });
 
-  const newTweet = completion.data.choices[0]
+  return completion.data.choices[0]
     .message!.content.replace(/#\w+\s?/g, "")
     .replace("#", "")
     .trim();
-  console.log(newTweet);
-
-  return newTweet;
 }

@@ -1,4 +1,24 @@
 {
   "username": "tstorm106",
-  "minLikes": 5
+  "minLikes": 5,
+  "adverbs": ["extremely", "somewhat", "a little", "not at all"],
+  "moods": [
+    "angry",
+    "upbeat",
+    "sad",
+    "irritated",
+    "pissed",
+    "upset",
+    "frustrated",
+    "assertive",
+    "sarcastic",
+    "critical",
+    "exhausted",
+    "energetic",
+    "negative",
+    "confused",
+    "disappointed",
+    "confident",
+    "cynical"
+  ]
 }
