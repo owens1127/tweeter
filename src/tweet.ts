@@ -1,12 +1,16 @@
 import * as dotenv from "dotenv";
-import { Configuration, OpenAIApi } from "openai";
+import {
+  ChatCompletionRequestMessageRoleEnum,
+  Configuration,
+  OpenAIApi,
+} from "openai";
 import { TwitterApi } from "twitter-api-v2";
 import fs from "fs";
 import config from "./config.json";
 
 dotenv.config();
 
-const { username, moods, adverbs } = config;
+const { username, moods, adverbs, temperature } = config;
 
 const openai = new OpenAIApi(
   new Configuration({
@@ -31,7 +35,9 @@ async function main() {
 
 async function generateTweet() {
   const tweets = (
-    JSON.parse(fs.readFileSync(`./tweets_${username}.json`, "utf8")) as string[]
+    JSON.parse(
+      fs.readFileSync(`./collection/tweets_${username}.json`, "utf8")
+    ) as string[]
   )
     .filter((tweet) => !tweet.includes("http"))
     .map((tweet) => tweet.replace("\n", " "))
@@ -46,7 +52,7 @@ async function generateTweet() {
       50
     );
 
-  while (indices.size < 25 && payloadSize() < 3300) {
+  while (indices.size < 50 && payloadSize() < 3300) {
     const rand = Math.floor(Math.random() * tweets.length);
     if (indices.has(rand)) continue;
     else {
@@ -60,9 +66,13 @@ async function generateTweet() {
   const mood = moods[Math.floor(Math.random() * moods.length)];
   console.log(`Style: ${adverb} ${mood}`);
 
-  const completion = await openai.createChatCompletion({
+  const input = {
+    user: username,
+    tweets: [...selectedTweets],
+    adverb,
+    mood,
     model: "gpt-3.5-turbo",
-    temperature: 0.4,
+    temperature,
     messages: [
       {
         role: "system",
@@ -76,11 +86,25 @@ async function generateTweet() {
         role: "user",
         content: `Please generate 1 new ${adverb} ${mood} short tweet based on the writing-style, language, emotion, and topics in those tweets`,
       },
-    ],
+    ] as { role: ChatCompletionRequestMessageRoleEnum; content: string }[],
+  };
+
+  const completion = await openai.createChatCompletion({
+    model: input.model,
+    temperature: input.temperature,
+    messages: input.messages,
   });
 
-  return completion.data.choices[0]
+  const output = completion.data;
+  const tweet = output.choices[0]
     .message!.content.replace(/#\w+\s?/g, "")
     .replace("#", "")
     .trim();
+
+  fs.writeFileSync(
+    `./logs/tweet_${username}_${new Date().toISOString()}.json`,
+    JSON.stringify({ input, output, tweet }, null, 2)
+  );
+
+  return tweet;
 }

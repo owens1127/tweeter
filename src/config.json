@@ -1,6 +1,7 @@
 {
   "username": "tstorm106",
   "minLikes": 5,
+  "temperature": 0.4,
   "adverbs": ["extremely", "somewhat", "a little", "not at all"],
   "moods": [
     "angry",

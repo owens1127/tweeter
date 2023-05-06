@@ -8,4 +8,5 @@ build/
 
 *.env
 
-tweets_*.json
+logs/
+collection/

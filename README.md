@@ -15,3 +15,5 @@ TWITTER_API_SECRET=""
 TWITTER_ACCESS_TOKEN=""
 TWITTER_ACCESS_TOKEN_SECRET=""
 ```
+
+also setup your `config.json` file!

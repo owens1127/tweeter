@@ -26,7 +26,7 @@ async function main() {
   let cachedTweets: string[];
   try {
     cachedTweets = JSON.parse(
-      fs.readFileSync(`./tweets_${username}.json`, "utf8")
+      fs.readFileSync(`./collection/tweets_${username}.json`, "utf8")
     ) as string[];
   } catch {
     cachedTweets = [];
@@ -62,7 +62,7 @@ async function main() {
   // finish
   await browser.close();
   fs.writeFileSync(
-    `./tweets_${username}.json`,
+    `./collection/tweets_${username}.json`,
     JSON.stringify([...tweets], null, 2)
   );
   console.log(
