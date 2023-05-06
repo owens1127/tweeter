@@ -12,12 +12,10 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: "14.x"
+          node-version: "18.x"
       - name: Install Yarn
         run: npm install -g yarn
       - name: Install dependencies
         run: yarn install
-      - name: Build TypeScript
-        run: yarn build
-      - name: Run script
-        run: yarn tweet
+      - name: Run the program
+        run: yarn go
