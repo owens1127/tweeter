@@ -18,21 +18,8 @@ jobs:
         run: npm install -g yarn
       - name: Install dependencies
         run: yarn install
-      - name: Check if artifacts exist
-        id: check-artifacts
-        run: echo "{exists}={$(ls -1 artifacts/ | wc -l)}" >> $GITHUB_OUTPUT
-      - name: Download collection
-        if: steps.check-artifacts.outputs.exists == '1'
+      - name: Download all workflow run artifacts
         uses: actions/download-artifact@v3
-        with:
-          name: collection
-          path: collection/
-      - name: Download logs
-        if: steps.check-artifacts.outputs.exists == '1'
-        uses: actions/download-artifact@v3
-        with:
-          name: logs
-          path: logs/
       - name: Prepare directories
         run: |
           mkdir -p ./collection/

@@ -64,15 +64,14 @@ async function generateTweet() {
   const prompt = [...selectedTweets].join("\n\n");
   const adverb = adverbs[Math.floor(Math.random() * adverbs.length)];
   const mood = moods[Math.floor(Math.random() * moods.length)];
-  console.log(`Style: ${adverb} ${mood}`);
 
   const input = {
     user: username,
-    tweets: [...selectedTweets],
     adverb,
     mood,
     model: "gpt-3.5-turbo",
     temperature,
+    tweets: [...selectedTweets],
     messages: [
       {
         role: "system",
@@ -103,7 +102,9 @@ async function generateTweet() {
 
   const log = JSON.stringify({ input, output, tweet }, null, 2);
   fs.writeFileSync(
-    `./logs/tweet_${username}_${new Date().toISOString()}.json`,
+    `./logs/tweet_${username}_${new Date()
+      .toISOString()
+      .replace(/\.|:/g, "-")}.json`,
     log
   );
   console.log(log);
