@@ -18,6 +18,8 @@ jobs:
         run: npm install -g yarn
       - name: Install dependencies
         run: yarn install
+      - name: Prepare directories
+        run: mkdir ./collection ; mkdir ./logs
       - name: Run the program
         env:
           TWINE_USERNAME: "__token__"

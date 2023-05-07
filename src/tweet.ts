@@ -101,10 +101,12 @@ async function generateTweet() {
     .replace("#", "")
     .trim();
 
+  const log = JSON.stringify({ input, output, tweet }, null, 2);
   fs.writeFileSync(
     `./logs/tweet_${username}_${new Date().toISOString()}.json`,
-    JSON.stringify({ input, output, tweet }, null, 2)
+    log
   );
+  console.log(log);
 
   return tweet;
 }
