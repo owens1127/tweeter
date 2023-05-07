@@ -22,8 +22,6 @@ jobs:
         run: mkdir ./collection ; mkdir ./logs
       - name: Run the program
         env:
-          TWINE_USERNAME: "__token__"
-          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
           USERNAME: ${{ secrets.USERNAME }}
           PASSWORD: ${{ secrets.PASSWORD }}
           OPENAI_SECRET: ${{ secrets.OPENAI_SECRET }}
