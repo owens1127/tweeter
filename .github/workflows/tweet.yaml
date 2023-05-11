@@ -22,6 +22,8 @@ jobs:
         uses: actions/download-artifact@v3
       - name: Prepare directories
         run: |
+          unzip -p ./collection.zip
+          unzip -p ./logs.zip
           mkdir -p ./collection/
           mkdir -p ./logs/
       - name: Run the program
