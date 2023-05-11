@@ -83,7 +83,7 @@ async function generateTweet() {
       },
       {
         role: "user",
-        content: `Please generate 1 new ${adverb} ${mood} short tweet based on the writing-style, language, emotion, and topics in those tweets`,
+        content: `Please generate 1 new ${adverb} ${mood} short tweet based on the writing-style, language, emotion, capitalization, and topics in those tweets`,
       },
     ] as { role: ChatCompletionRequestMessageRoleEnum; content: string }[],
   };
