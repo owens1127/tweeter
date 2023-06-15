@@ -10,7 +10,7 @@ import config from "./config.json";
 
 dotenv.config();
 
-const { username, moods, adverbs, temperature } = config;
+const { username, moods, adverbs, temperature, model } = config;
 
 const openai = new OpenAIApi(
   new Configuration({
@@ -69,7 +69,7 @@ async function generateTweet() {
     user: username,
     adverb,
     mood,
-    model: "gpt-3.5-turbo",
+    model,
     temperature,
     tweets: [...selectedTweets],
     messages: [
@@ -95,8 +95,8 @@ async function generateTweet() {
   });
 
   const output = completion.data;
-  const tweet = output.choices[0]
-    .message!.content.replace(/#\w+\s?/g, "")
+  const tweet = output
+    .choices![0].message!.content!.replace(/#\w+\s?/g, "")
     .replace("#", "")
     .trim();
 
