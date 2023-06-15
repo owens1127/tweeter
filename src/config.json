@@ -2,7 +2,7 @@
   "username": "tstorm106",
   "model": "gpt-3.5-turbo",
   "minLikes": 5,
-  "temperature": 0.65,
+  "temperature": 0.72,
   "adverbs": ["extremely", "somewhat"],
   "moods": [
     "angry",

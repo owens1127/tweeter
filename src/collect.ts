@@ -1,5 +1,4 @@
 import * as dotenv from "dotenv";
-import * as puppeteer from "puppeteer";
 import config from "./config.json";
 import fs from "fs";
 import login from "./login";
