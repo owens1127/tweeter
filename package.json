@@ -8,7 +8,7 @@
     "build": "tsc -p tsconfig.json",
     "collect": "node ./build/collect.js",
     "tweet": "node ./build/tweet.js",
-    "go": "yarn build && yarn collect && yarn tweet"
+    "go": "npm run build && npm run collect && npm run tweet"
   },
   "dependencies": {
     "dotenv": "^16.0.3",
