@@ -108,6 +108,7 @@ async function generateTweet() {
     choice
       .message!.content!.replace(/#\w+\s?/g, "")
       .replace("#", "")
+      .replace(/^"(.*)"$/, "$1")
       .trim()
   );
   const verificationPromise = openai.createChatCompletion({
@@ -142,6 +143,7 @@ async function generateTweet() {
   )[0];
 
   const log = JSON.stringify({ input, choices, avgRatings, tweet }, null, 2);
+
   fs.writeFileSync(
     `./logs/tweet_${username}_${new Date()
       .toISOString()
