@@ -16,9 +16,7 @@ async function main() {
   url.searchParams.set("f", "live");
   url.searchParams.set(
     "q",
-    encodeURIComponent(
-      `(from:${username}) min_faves:${minLikes} -filter:replies`
-    )
+    `(from:${username}) min_faves:${minLikes} -filter:replies`
   );
   url.searchParams.set("src", "typed_query");
 
