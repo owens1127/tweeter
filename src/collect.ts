@@ -56,6 +56,7 @@ async function main() {
         tweets: Array.from(tweets).map((tweet) => tweet.textContent ?? ""),
       };
     });
+
     for (const tweet of tweetObject.tweets) {
       if (!tweets.has(tweet)) {
         newTweets++;

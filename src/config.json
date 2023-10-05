@@ -3,7 +3,8 @@
   "model": "gpt-3.5-turbo",
   "minLikes": 5,
   "temperature": 0.72,
-  "choices": 4,
+  "maxTrainingTweets": 10,
+  "generatedTweets": 4,
   "bannedTopics": ["death, cancer"],
   "adverbs": [
     "barely",

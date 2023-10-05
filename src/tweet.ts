@@ -13,7 +13,8 @@ const {
   temperature,
   model,
   bannedTopics,
-  choices: n,
+  maxTrainingTweets,
+  generatedTweets: n,
 } = config;
 
 const openai = new OpenAIApi(
@@ -60,7 +61,7 @@ async function generateTweet() {
       50
     );
 
-  while (indices.size < 50 && payloadSize() < 3300) {
+  while (indices.size < maxTrainingTweets && payloadSize() < 3300) {
     const rand = Math.floor(Math.random() * tweets.length);
     if (indices.has(rand)) continue;
     else {
