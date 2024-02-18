@@ -11,13 +11,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download code coverage report
+      - name: Download collection
         uses: dawidd6/action-download-artifact@v3
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
           workflow_conclusion: success
           if_no_artifact_found: ignore
-
           name: collection
 
       - name: Install dependencies
