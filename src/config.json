@@ -1,11 +1,11 @@
 {
-  "username": "destiny2team",
   "model": "gpt-3.5-turbo",
   "minLikes": 5,
   "temperature": 0.72,
-  "maxTrainingTweets": 10,
+  "maxTrainingTweets": 15,
+  "maxTokens": 5000,
   "generatedTweets": 4,
-  "bannedTopics": ["death, cancer"],
+  "bannedTopics": ["death", "cancer"],
   "adverbs": [
     "barely",
     "cautiously",
@@ -43,7 +43,7 @@
     "positive",
     "sad",
     "sarcastic",
-    "surpised",
+    "surprised",
     "thrilled",
     "upbeat",
     "upset"

@@ -2,17 +2,47 @@ import * as dotenv from "dotenv";
 import config from "./config.json";
 import fs from "fs";
 import login from "./login";
+import puppeteer from "puppeteer";
+import yargs from "yargs";
 
-const { username, minLikes } = config;
+const argv = yargs
+  .option("username", {
+    alias: "U",
+    description: "The username of the account to collect tweets from",
+    type: "string",
+    demandOption: true,
+  })
+  .option("headless", {
+    alias: "H",
+    description: "Run in headless mode",
+    type: "boolean",
+  })
+  .help()
+  .alias("help", "h").argv;
+
+const { minLikes } = config;
 dotenv.config();
 
 main();
 
 async function main() {
-  const { page, browser } = await login();
+  // @ts-expect-error
+  const username = argv.username as string;
+  const browser = await puppeteer.launch({
+    // @ts-ignore
+    headless: argv.headless ? "new" : false,
+    args: ["--no-sandbox"],
+  });
+  const [page] = await browser.pages();
+  await page.setViewport({
+    width: 1200,
+    height: 800,
+  });
+
+  await login(page);
 
   // search
-  const url = new URL("https://twitter.com/search");
+  const url = new URL("/search", "https://twitter.com");
   url.searchParams.set("f", "live");
   url.searchParams.set(
     "q",
@@ -68,6 +98,7 @@ async function main() {
 
   // finish
   await browser.close();
+
   fs.writeFileSync(
     `./collection/tweets_${username}.json`,
     JSON.stringify([...tweets], null, 2)

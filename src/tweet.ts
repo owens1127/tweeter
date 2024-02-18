@@ -3,11 +3,21 @@ import { Configuration, OpenAIApi } from "openai";
 import { TwitterApi } from "twitter-api-v2";
 import fs from "fs";
 import config from "./config.json";
+import yargs from "yargs";
 
 dotenv.config();
 
+const argv = yargs
+  .option("username", {
+    alias: "U",
+    description: "The username of the account to collect tweets from",
+    type: "string",
+    demandOption: true,
+  })
+  .help()
+  .alias("help", "h").argv;
+
 const {
-  username,
   moods,
   adverbs,
   temperature,
@@ -15,6 +25,7 @@ const {
   bannedTopics,
   maxTrainingTweets,
   generatedTweets: n,
+  maxTokens,
 } = config;
 
 const openai = new OpenAIApi(
@@ -30,30 +41,31 @@ const twitter = new TwitterApi({
   accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET!,
 }).v2;
 
+// @ts-expect-error
+const username = argv.username as string;
 main();
 
 async function main() {
-  const tweet = await generateTweet();
-  console.log(tweet);
-  await twitter.tweet(tweet);
-}
-
-function processTweets(tweets: string[]): string[] {
-  return tweets
-    .filter((tweet) => !tweet.includes("http"))
-    .map((tweet) => tweet.replace("\n", " "))
-    .map((tweet) => tweet.replace(/\s{2,}/g, " "));
-}
-
-async function generateTweet() {
   const tweets = processTweets(
     JSON.parse(
       fs.readFileSync(`./collection/tweets_${username}.json`, "utf8")
     ) as string[]
   );
+  const selectedTweets = chooseTweets(tweets);
+  const tweet = await generateTweet(selectedTweets);
 
-  let indices = new Set<number>();
-  let selectedTweets = new Set<string>();
+  await twitter.tweet(tweet);
+}
+
+function processTweets(tweets: string[]): string[] {
+  return tweets.map((tweet) =>
+    tweet.replace("\n", " ").replace(/\s{2,}/g, " ")
+  );
+}
+
+function chooseTweets(tweets: string[]) {
+  const indices = new Set<number>();
+  const selectedTweets = new Set<string>();
 
   const payloadSize = () =>
     [...selectedTweets].reduce(
@@ -61,7 +73,7 @@ async function generateTweet() {
       50
     );
 
-  while (indices.size < maxTrainingTweets && payloadSize() < 3300) {
+  while (indices.size < maxTrainingTweets && payloadSize() < maxTokens) {
     const rand = Math.floor(Math.random() * tweets.length);
     if (indices.has(rand)) continue;
     else {
@@ -70,6 +82,10 @@ async function generateTweet() {
     }
   }
 
+  return selectedTweets;
+}
+
+async function generateTweet(selectedTweets: Set<string>) {
   const prompt = [...selectedTweets].join("\n\n");
   const adverb = adverbs[Math.floor(Math.random() * adverbs.length)];
   const mood = moods[Math.floor(Math.random() * moods.length)];
@@ -84,7 +100,7 @@ async function generateTweet() {
     n,
   };
 
-  const tweetsPromise = openai.createChatCompletion({
+  const tweetsPromise = await openai.createChatCompletion({
     model: input.model,
     n: input.n,
     temperature: input.temperature,
@@ -104,7 +120,7 @@ async function generateTweet() {
     ],
   });
 
-  const output = (await tweetsPromise).data;
+  const output = tweetsPromise.data;
   const choices = output.choices!.map((choice) =>
     choice
       .message!.content!.replace(/#\w+\s?/g, "")
@@ -112,7 +128,7 @@ async function generateTweet() {
       .replace(/^"(.*)"$/, "$1")
       .trim()
   );
-  const verificationPromise = openai.createChatCompletion({
+  const verificationPromise = await openai.createChatCompletion({
     model: input.model,
     temperature: input.temperature / 3,
     n,
@@ -128,7 +144,7 @@ async function generateTweet() {
     ],
   });
 
-  const ratingsByChoice = (await verificationPromise).data.choices.map(
+  const ratingsByChoice = verificationPromise.data.choices.map(
     (choice) => JSON.parse(choice.message!.content!) as number[]
   );
 
@@ -151,7 +167,6 @@ async function generateTweet() {
       .replace(/\.|:/g, "-")}.json`,
     log
   );
-  console.log(log);
 
   return tweet;
 }

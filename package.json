@@ -5,19 +5,20 @@
   "author": "Owen Simpson",
   "license": "MIT",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "collect": "node ./build/collect.js",
-    "tweet": "node ./build/tweet.js",
-    "go": "npm run build && npm run collect && npm run tweet"
+    "collect": "ts-node ./src/collect.ts",
+    "tweet": "ts-node ./src/tweet.ts"
   },
   "dependencies": {
     "dotenv": "^16.0.3",
     "fs": "^0.0.1-security",
-    "openai": "^3.2.1",
+    "openai": "^3.3.0",
     "puppeteer": "^20.0.0",
-    "twitter-api-v2": "^1.14.2"
+    "twitter-api-v2": "^1.14.2",
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "typescript": "^5.2.2"
+    "@types/yargs": "^17.0.32",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
   }
 }
