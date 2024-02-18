@@ -14,6 +14,12 @@ const argv = yargs
     type: "string",
     demandOption: true,
   })
+  .option("send", {
+    alias: "S",
+    description: "Whether to not actually tweet",
+    type: "boolean",
+    default: true,
+  })
   .help()
   .alias("help", "h").argv;
 
@@ -43,6 +49,8 @@ const twitter = new TwitterApi({
 
 // @ts-expect-error
 const username = argv.username as string;
+// @ts-expect-error
+const shouldSend = argv.send as boolean;
 main();
 
 async function main() {
@@ -52,9 +60,18 @@ async function main() {
     ) as string[]
   );
   const selectedTweets = chooseTweets(tweets);
-  const tweet = await generateTweet(selectedTweets);
-
-  await twitter.tweet(tweet);
+  const { tweet, log } = await generateTweet(selectedTweets);
+  if (shouldSend) {
+    await twitter.tweet(tweet);
+    fs.writeFileSync(
+      `./logs/tweet_${username}_${new Date()
+        .toISOString()
+        .replace(/\.|:/g, "-")}.json`,
+      JSON.stringify(log, null, 2)
+    );
+  } else {
+    console.log(tweet, log);
+  }
 }
 
 function processTweets(tweets: string[]): string[] {
@@ -115,7 +132,7 @@ async function generateTweet(selectedTweets: Set<string>) {
       },
       {
         role: "user",
-        content: `Please generate 1 new ${adverb} ${mood} short tweet based on the writing-style, language, emotion, capitalization, and topics in those tweets`,
+        content: `Please generate 1 new ${adverb} ${mood} short tweet based on the writing-style, language, emotion, capitalization, and topics in those tweets. Get a bit creative, it doesn't have to be a direct copy of any of the tweets.`,
       },
     ],
   });
@@ -159,14 +176,7 @@ async function generateTweet(selectedTweets: Set<string>) {
     (_, idx) => avgRatings[idx] >= (1.5 - temperature) / 2
   )[0];
 
-  const log = JSON.stringify({ input, choices, avgRatings, tweet }, null, 2);
+  const log = { input, choices, avgRatings, tweet };
 
-  fs.writeFileSync(
-    `./logs/tweet_${username}_${new Date()
-      .toISOString()
-      .replace(/\.|:/g, "-")}.json`,
-    log
-  );
-
-  return tweet;
+  return { log, tweet };
 }
