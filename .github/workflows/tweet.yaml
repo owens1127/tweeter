@@ -21,6 +21,7 @@ jobs:
           workflow_conclusion: success
           if_no_artifact_found: ignore
           name: collection
+          path: ./collection
 
       - name: Locate logs
         run: ls -a
