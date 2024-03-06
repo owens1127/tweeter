@@ -124,7 +124,7 @@ async function generateTweet(selectedTweets: Set<string>) {
     messages: [
       {
         role: "system",
-        content: `You are a machine-learning model trying to emulate the tweets from ${username}. Here are ${username}'s recent tweets:`,
+        content: `You are a machine-learning model trying to reproduce the a tweet from ${username}. You will be provided with a small example of ${username}'s recent tweets, and you will be asked to create a new tweet could, in theory, have been tweeted by ${username}.`,
       },
       {
         role: "user",
@@ -132,7 +132,7 @@ async function generateTweet(selectedTweets: Set<string>) {
       },
       {
         role: "user",
-        content: `Please generate 1 new ${adverb} ${mood} short tweet based on the writing-style, language, emotion, capitalization, and topics in those tweets. Get a bit creative, it doesn't have to be a direct copy of any of the tweets.`,
+        content: `Please generate 1 new tweet from {username}. The new tweet should be a blend of specific events and details talked about in the various tweets provided. The new tweet should be unique, yet someone who reads the tweet should be able to go, "Oh, that is definitely a ${username} tweet". The new tweet should not include emojis. The new tweet should be ${adverb} ${mood}.`,
       },
     ],
   });
