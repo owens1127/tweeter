@@ -41,12 +41,32 @@ async function main() {
 
   await login(page);
 
+  let cachedTweets: string[] = [];
+  let since: Date | null = null;
+  try {
+    const fromFile = JSON.parse(
+      fs.readFileSync(`./collection/tweets_${username}.json`, "utf8")
+    ) as {
+      firstDate: string | undefined;
+      tweets: string[] | undefined;
+    };
+    if (!fromFile.firstDate || !fromFile.tweets) {
+      throw new Error("Invalid file");
+    }
+    cachedTweets = fromFile.tweets;
+    since = new Date(fromFile.firstDate);
+  } catch {}
+
+  const tweets = new Set<String>(cachedTweets);
+
   // search
   const url = new URL("/search", "https://twitter.com");
   url.searchParams.set("f", "live");
   url.searchParams.set(
     "q",
-    `(from:${username}) min_faves:${minLikes} -filter:replies`
+    `(from:${username}) min_faves:${minLikes} -filter:replies${
+      since ? ` since:${since.toISOString().split("T")[0]}` : ""
+    }`
   );
   url.searchParams.set("src", "typed_query");
 
@@ -55,35 +75,24 @@ async function main() {
     timeout: 10000,
   });
 
-  type TweetData = { tweets: string[] };
-
-  let cachedTweets: string[];
-  try {
-    cachedTweets = JSON.parse(
-      fs.readFileSync(`./collection/tweets_${username}.json`, "utf8")
-    ) as string[];
-  } catch {
-    cachedTweets = [];
-  }
-
-  const tweets = new Set<String>(cachedTweets);
-
   // find all tweets
   let newTweets = 0;
   let noNewTweetsCount = 0;
   while (noNewTweetsCount <= 10) {
-    const tweetObject = await page.evaluate(async (): Promise<TweetData> => {
-      const tweets = document.querySelectorAll(
-        'div [data-testid="tweet"] > div > div > div > div > div > div[data-testid="tweetText"]'
-      );
-      window.scrollBy(0, 1000);
+    const tweetObject = await page.evaluate(
+      async (): Promise<{ tweets: string[] }> => {
+        const tweets = document.querySelectorAll(
+          'div [data-testid="tweet"] > div > div > div > div > div > div[data-testid="tweetText"]'
+        );
+        window.scrollBy(0, 1000);
 
-      await new Promise<void>((resolve) => setTimeout(resolve, 500));
+        await new Promise<void>((resolve) => setTimeout(resolve, 500));
 
-      return {
-        tweets: Array.from(tweets).map((tweet) => tweet.textContent ?? ""),
-      };
-    });
+        return {
+          tweets: Array.from(tweets).map((tweet) => tweet.textContent ?? ""),
+        };
+      }
+    );
 
     for (const tweet of tweetObject.tweets) {
       if (!tweets.has(tweet)) {
@@ -101,9 +110,14 @@ async function main() {
 
   fs.writeFileSync(
     `./collection/tweets_${username}.json`,
-    JSON.stringify([...tweets], null, 2)
+    JSON.stringify(
+      {
+        firstDate: new Date().toISOString(),
+        tweets: [...tweets],
+      },
+      null,
+      2
+    )
   );
-  console.log(
-    `Found ${tweets.size} (${newTweets} new) tweets from @${username}`
-  );
+  console.log(`Found ${newTweets} new tweets from @${username}`);
 }
