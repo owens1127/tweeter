@@ -2,6 +2,9 @@ on:
   schedule:
     - cron: "5 16 * * *"
   workflow_dispatch:
+  push:
+    branches:
+      - test
 
 jobs:
   my-job:
@@ -19,24 +22,32 @@ jobs:
           if_no_artifact_found: ignore
           name: collection
 
+      - name: Locate logs
+        run: ls -a
+
       - name: Install dependencies
         run: npm install
+
       - name: Prepare directories
         run: |
           mkdir -p ./collection/
           mkdir -p ./logs/
 
-      - name: Run the program
+      - name: Collect
         env:
           USERNAME: ${{ secrets.USERNAME }}
           PASSWORD: ${{ secrets.PASSWORD }}
+        run: |
+          npm run collect -- -U ${{ secrets.TARGET_USERNAME }} -H
+
+      - name: Tweet
+        env:
           OPENAI_SECRET: ${{ secrets.OPENAI_SECRET }}
           TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
           TWITTER_API_SECRET: ${{ secrets.TWITTER_API_SECRET }}
           TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
           TWITTER_ACCESS_TOKEN_SECRET: ${{ secrets.TWITTER_ACCESS_TOKEN_SECRET }}
         run: |
-          npm run collect -- -U ${{ secrets.TARGET_USERNAME }} -H 
           npm run tweet -- -U ${{ secrets.TARGET_USERNAME }}
 
       - name: "Upload Collection"
