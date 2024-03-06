@@ -23,9 +23,6 @@ jobs:
           name: collection
           path: ./collection
 
-      - name: Locate logs
-        run: ls -a
-
       - name: Install dependencies
         run: npm install
 
