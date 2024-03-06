@@ -124,7 +124,7 @@ async function generateTweet(selectedTweets: Set<string>) {
     messages: [
       {
         role: "system",
-        content: `You are a machine-learning model trying to reproduce the a tweet from ${username}. You will be provided with a small example of ${username}'s recent tweets, and you will be asked to create a new tweet could, in theory, have been tweeted by ${username}.`,
+        content: `You are a machine-learning model trying to reproduce a tweet from ${username}. You will be provided with a small sample of ${username}'s recent tweets, and you will be asked to create a new unique tweet that could, in theory, have been tweeted by ${username}.`,
       },
       {
         role: "user",
