@@ -47,9 +47,12 @@ async function main() {
     const fromFile = JSON.parse(
       fs.readFileSync(`./collection/tweets_${username}.json`, "utf8")
     ) as {
-      firstDate: string;
-      tweets: string[];
+      firstDate: string | undefined;
+      tweets: string[] | undefined;
     };
+    if (!fromFile.firstDate || !fromFile.tweets) {
+      throw new Error("Invalid file");
+    }
     cachedTweets = fromFile.tweets;
     since = new Date(fromFile.firstDate);
   } catch {}
