@@ -20,6 +20,11 @@ const argv = yargs
     type: "boolean",
     default: true,
   })
+  .option("webhook", {
+    alias: "W",
+    description: "The webhook to send the tweet to",
+    type: "string",
+  })
   .help()
   .alias("help", "h").argv;
 
@@ -51,15 +56,21 @@ const twitter = new TwitterApi({
 const username = argv.username as string;
 // @ts-expect-error
 const shouldSend = argv.send as boolean;
+// @ts-expect-error
+const webhookURL = argv.webhook as string | undefined;
+
 main();
 
 async function main() {
-  const tweets = processTweets(
-    JSON.parse(
-      fs.readFileSync(`./collection/tweets_${username}.json`, "utf8")
-    ) as string[]
-  );
-  const selectedTweets = chooseTweets(tweets);
+  const { tweets } = JSON.parse(
+    fs.readFileSync(`./collection/tweets_${username}.json`, "utf8")
+  ) as {
+    firstDate: string | undefined;
+    tweets: string[] | undefined;
+  };
+  if (!tweets) throw new Error("No tweets found");
+
+  const selectedTweets = chooseTweets(processTweets(tweets));
   const { tweet, log } = await generateTweet(selectedTweets);
   if (shouldSend) {
     await twitter.tweet(tweet);
@@ -71,6 +82,29 @@ async function main() {
     );
   } else {
     console.log(tweet, log);
+  }
+
+  if (webhookURL) {
+    await fetch(webhookURL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        content: [
+          `<t:${Math.floor(Date.now() / 1000)}:f>`,
+          "```json",
+          JSON.stringify(log.input, null, 2),
+          "```",
+          tweet,
+        ]
+          .join("\n")
+          .substring(0, 2000),
+      }),
+    })
+      .then((res) => res.text())
+      .then(console.log)
+      .catch(console.error);
   }
 }
 
@@ -146,8 +180,8 @@ async function generateTweet(selectedTweets: Set<string>) {
       .trim()
   );
   const verificationPromise = await openai.createChatCompletion({
-    model: input.model,
-    temperature: input.temperature / 3,
+    model: "gpt-3.5-turbo",
+    temperature: 0.2,
     n,
     messages: [
       {
