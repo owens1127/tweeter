@@ -24,7 +24,7 @@ const openai = new OpenAIApi(
 export async function generateTweet(username: string, tweets: string[]) {
   const selectedTweets = await sanitizeTweets(tweets).then(chooseTweets);
 
-  const prompt = [...selectedTweets].join("\n\n");
+  const selectedTweetsString = [...selectedTweets].join("\n\n");
   const adverb = adverbs[Math.floor(Math.random() * adverbs.length)];
   const mood = moods[Math.floor(Math.random() * moods.length)];
 
@@ -49,7 +49,7 @@ export async function generateTweet(username: string, tweets: string[]) {
       },
       {
         role: "user",
-        content: prompt,
+        content: selectedTweetsString,
       },
       {
         role: "user",

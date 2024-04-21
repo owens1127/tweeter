@@ -4,7 +4,7 @@
   "temperature": 0.6,
   "maxTrainingTweets": 15,
   "maxTokens": 5000,
-  "generatedTweets": 4,
+  "generatedTweets": 2,
   "bannedTopics": ["death", "cancer"],
   "adverbs": [
     "artistically",
