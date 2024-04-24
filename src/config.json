@@ -6,7 +6,7 @@
   "maxTokens": 5000,
   "generatedTweets": 2,
   "bannedTopics": ["death", "cancer"],
-  "lengths": ["extremely short", "short and sweet", "medium length", "two-sentence", "three-sentence", "lengthy (but within the limits of twitter)"],
+  "lengths": ["few words max", "extremely short", "short and sweet", "medium length", "two-sentence", "three-sentence", "lengthy (but within the limits of twitter)"],
   "adverbs": [
     "artistically",
     "barely",
