@@ -17,7 +17,7 @@ const argv = yargs
     alias: "S",
     description: "Whether to not actually tweet",
     type: "boolean",
-    default: true,
+    default: false,
   })
   .option("webhook", {
     alias: "W",

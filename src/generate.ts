@@ -13,6 +13,7 @@ const {
   maxTrainingTweets,
   generatedTweets: n,
   maxTokens,
+  lengths
 } = config;
 
 const openai = new OpenAIApi(
@@ -27,6 +28,7 @@ export async function generateTweet(username: string, tweets: string[]) {
   const selectedTweetsString = [...selectedTweets].join("\n\n");
   const adverb = adverbs[Math.floor(Math.random() * adverbs.length)];
   const mood = moods[Math.floor(Math.random() * moods.length)];
+  const tweetLength = lengths[Math.floor(Math.random() * lengths.length)];
 
   const input = {
     user: username,
@@ -34,6 +36,7 @@ export async function generateTweet(username: string, tweets: string[]) {
     mood,
     model,
     temperature,
+    tweetLength,
     tweets: [...selectedTweets],
     n,
   };
@@ -45,7 +48,7 @@ export async function generateTweet(username: string, tweets: string[]) {
     messages: [
       {
         role: "system",
-        content: `You are a machine-learning model trying to reproduce a tweet from ${username}. You will be provided with a small sample of ${username}'s recent tweets, and you will be asked to create a new unique tweet that could, in theory, have been tweeted by ${username}.`,
+        content: `You are a machine-learning model trying to create a new tweet from ${username} given his/her tweeting history. You will be provided with a small sample of ${username}'s recent tweets to begin.`,
       },
       {
         role: "user",
@@ -53,7 +56,7 @@ export async function generateTweet(username: string, tweets: string[]) {
       },
       {
         role: "user",
-        content: `Please generate 1 new tweet from {username}. The new tweet should be a blend of specific events and details talked about in the various tweets provided. The new tweet should be unique, yet someone who reads the tweet should be able to go, "Oh, that is definitely a ${username} tweet". The new tweet should not include emojis. The new tweet should be ${adverb} ${mood}. The tweet can be really short, short, medium, or long (but within the confines of a tweet)--pick at random.`,
+        content: `The new tweet should be a blend of specific events and details talked about in the various tweets provided. The new tweet should be unique, so feel free introduce topics and themes inferred to be similat to what ${username} talks about. The new tweet should not include emojis. The new tweet should be ${adverb} ${mood}. The tweet MUST be a ${tweetLength} tweet.`,
       },
     ],
   });
